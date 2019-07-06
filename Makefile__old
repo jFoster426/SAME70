@@ -1,0 +1,65 @@
+BUILD = build
+BIN = program
+LIBRARY = lib
+
+.PHONY: all directory clean size
+
+CC = arm-none-eabi-gcc
+OBJCOPY = arm-none-eabi-objcopy
+SIZE = arm-none-eabi-size
+
+CFLAGS += -W -Wall --std=gnu99
+CFLAGS += -fno-diagnostics-show-caret
+CFLAGS += -fdata-sections -ffunction-sections
+CFLAGS += -funsigned-char -funsigned-bitfields
+CFLAGS += -mcpu=cortex-m7 -mthumb
+CFLAGS += -mfloat-abi=hard -mfpu=fpv5-d16
+CFLAGS += -MD -MP -MT $(BUILD)/$(*F).o -MF $(BUILD)/$(@F).d
+
+LDFLAGS += -mcpu=cortex-m7 -mthumb
+LDFLAGS += -mfloat-abi=hard -mfpu=fpv5-d16
+LDFLAGS += -Wl,--gc-sections
+LDFLAGS += -Wl,--script=same70q21.ld
+
+INCLUDES += -I include
+INCLUDES += -I lib
+
+DEFINES += -DDONT_USE_CMSIS_INIT
+DEFINES += -DF_CPU=150000000
+
+CFLAGS += $(INCLUDES) $(DEFINES)
+
+SRCS := $(shell dir *.c /b)
+
+LIBS = $(addsuffix .c,$(shell dir lib /b))
+
+OBJS += $(addprefix $(BUILD)/, $(notdir %/$(subst .c,.o, $(SRCS))))
+OBJS += $(addprefix $(LIBRARY)/$(BUILD)/, $(notdir %/$(subst .c,.o, $(LIBS))))
+
+all: clean directory $(BUILD)/$(BIN).elf $(BUILD)/$(BIN).hex $(BUILD)/$(BIN).bin size
+
+$(BUILD)/$(BIN).elf: $(OBJS)
+	@echo Linking $@.
+	@$(CC) $(LDFLAGS) $(OBJS) -o $@
+
+$(BUILD)/$(BIN).hex: $(BUILD)/$(BIN).elf
+	@$(OBJCOPY) -O ihex $^ $@
+
+$(BUILD)/$(BIN).bin: $(BUILD)/$(BIN).elf
+	@echo Building binary $@.
+	@$(OBJCOPY) -O binary $^ $@
+
+%.o:
+	@echo Compiling $(subst .o,.c,$(notdir $@)) into $@.
+	@$(CC) $(CFLAGS) -c $(subst .o,.c,$(notdir $@)) -o $@
+
+directory:
+	@-mkdir $(BUILD)
+
+size: $(BUILD)/$(BIN).elf
+	@echo size:
+	@$(SIZE) -t $^
+
+clean:
+	@echo Cleaning build directory.
+	@del /q build\\*.*
