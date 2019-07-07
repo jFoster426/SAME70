@@ -1,7 +1,7 @@
-#include "same70q21.h"
-
 #ifndef GPIO_H
 #define GPIO_H
+
+#include "same70q21.h"
 
 // allow for multiple I/O changes with only one function call
 // e.g. gpio_conf(PIOA, PIO_PB0, PIO_INPUT | PIO_INPUT_PULLUP | PIO_INPUT_SCHMITT);

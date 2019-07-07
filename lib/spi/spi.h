@@ -1,8 +1,8 @@
-#include "same70q21.h"
-#include "../gpio/gpio.h"
-
 #ifndef SPI_H
 #define SPI_H
+
+#include "same70q21.h"
+#include "../gpio/gpio.h"
 
 // note they don't map properly!
 // the code will check if the user used these definitions or just typed '0'

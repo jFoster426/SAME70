@@ -4,7 +4,7 @@ CC = arm-none-eabi-gcc
 OBJCOPY = arm-none-eabi-objcopy
 SIZE = arm-none-eabi-size
 
-CFLAGS += -W -Wall --std=gnu99
+CFLAGS += -W -Wall --std=gnu99 -O0
 CFLAGS += -fno-diagnostics-show-caret
 CFLAGS += -fdata-sections -ffunction-sections
 CFLAGS += -funsigned-char -funsigned-bitfields
@@ -23,6 +23,7 @@ INCLUDES += -I lib
 DEFINES += -D DONT_USE_CMSIS_INIT
 DEFINES += -D F_CPU=300000000
 DEFINES += -D F_PCLK=150000000
+DEFINES += -D __DEBUG__
 
 
 CFLAGS += $(INCLUDES) $(DEFINES)

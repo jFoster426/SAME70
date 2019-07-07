@@ -1,7 +1,7 @@
-#include "same70q21.h"
-
 #ifndef UART_H
 #define UART_H
+
+#include "same70q21.h"
 
 #define UART_EVEN_PARITY  0
 #define UART_ODD_PARITY   1

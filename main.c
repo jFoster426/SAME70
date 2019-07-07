@@ -1,41 +1,10 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "same70q21.h"
 #include "gpio/gpio.h"
 #include "uart/uart.h"
 #include "spi/spi.h"
 #include "nrf/nrf.h"
-
-
-void nrf_show_upto(uint8_t upto)
-{
-    uart_transmit_string(UART0, "\n\nNRF Register Dump:\n\n");
-    uint8_t reg_val;
-    // ***** Memory Dump *****
-    for (uint8_t i = 0; i <= upto; i++)
-    {
-        reg_val = nrf_read_reg_single(i);
-        uart_transmit_hex(UART0, i, 1);
-        uart_transmit_string(UART0, ":   ");
-        uart_transmit_binary(UART0, reg_val, 1);
-        uart_transmit_string(UART0, "\n");
-        if (i >= 0x17) break;
-    }
-    if (upto >= 0x1C)
-    {
-        reg_val = nrf_read_reg_single(0x1C);
-        uart_transmit_hex(UART0, 0x1C, 1);
-        uart_transmit_string(UART0, ":   ");
-        uart_transmit_binary(UART0, reg_val, 1);
-        uart_transmit_string(UART0, "\n");
-    }
-    if (upto >= 0x1D)
-    {
-        reg_val = nrf_read_reg_single(0x1D);
-        uart_transmit_hex(UART0, 0x1D, 1);
-        uart_transmit_string(UART0, ":   ");
-        uart_transmit_binary(UART0, reg_val, 1);
-        uart_transmit_string(UART0, "\n\n");
-    }
-}
 
 // PIOB0, PIOB1, PIOB2, PIOB3 are LED's
 int main(void)
@@ -45,107 +14,43 @@ int main(void)
     gpio_conf(PIOB, PIO_PB2, PIO_OUTPUT);
     gpio_conf(PIOB, PIO_PB3, PIO_OUTPUT);
 
-    uart_conf(UART0, 115200, UART_NO_PARITY);
+    // uart_conf(UART0, 115200, UART_NO_PARITY);
 
     // configure SPI0
     spi_conf(SPI0, 1000000UL, SPI_MODE_0);
 
-    // ** should be inside function radio.begin()
-    gpio_conf(NRF_CE_PORT, NRF_CE_PIN, PIO_OUTPUT);
-    gpio_conf(NRF_CSN_PORT, NRF_CSN_PIN, PIO_OUTPUT);
-    gpio_set(NRF_CSN_PORT, NRF_CSN_PIN);
-    gpio_clr(NRF_CE_PORT, NRF_CE_PIN);
-    for (uint32_t i = 0; i < 1000000; i++) asm volatile ("Nop"); // 100ms delay
+    nrf_conf();
+    nrf_set_mode(NRF_MODE_RX);
+    nrf_set_channel(0x1F);
+    nrf_set_data_rate(NRF_DATARATE_1MBPS);
+    nrf_set_power_output(NRF_RF_PWR_0);
 
-    nrf_write_reg_single(NRF_REG_CONFIG, 0x0C);
-
-    // enable auto-ack on all pipes
-    nrf_write_reg_single(NRF_REG_EN_AA, 0b00111111);
-
-    nrf_write_reg_single(NRF_REG_FEATURE, 0x00);
-    nrf_write_reg_single(NRF_REG_DYNPD, 0x00);
-    nrf_write_reg_single(NRF_REG_STATUS, NRF_STATUS_RX_DR | NRF_STATUS_TX_DS | NRF_STATUS_MAX_RT);
-    nrf_flush_rx();
-    nrf_flush_tx();
-
-    // ** power up
-    uint8_t reg_val = nrf_read_reg_single(NRF_REG_CONFIG);
-    reg_val |= NRF_PWR_UP;
-    nrf_write_reg_single(NRF_REG_CONFIG, reg_val);
-    for (uint32_t i = 0; i < 100000; i++); // delay 5ms
-    reg_val = nrf_read_reg_single(NRF_REG_CONFIG);
-    reg_val &= ~(NRF_PRIM_RX); // change to tx mode
-    nrf_write_reg_single(NRF_REG_CONFIG, reg_val);
-    // **
-
-    // ** function radio.setChannel(int channel)
-    nrf_write_reg_single(NRF_REG_RF_CH, 0x1F);
-    // **
-
-    // ** function radio.setDataRate(int rate)
-    reg_val = nrf_read_reg_single(NRF_REG_RF_SETUP);
-    // set 1 mbps
-    reg_val &= ~(NRF_RF_DR_LOW | NRF_RF_DR_HIGH);
-    // set highest power mode
-    reg_val &= 0b11111001;
-    reg_val |= NRF_RF_PWR_0;
-    nrf_write_reg_single(NRF_REG_RF_SETUP, reg_val);
-    // **
-
-    // ** function radio.setRetries(int delay, int count)
-    nrf_write_reg_single(NRF_REG_SETUP_RETR, NRF_ARD_1000US | NRF_ARC_RETR_5);
-    // **
-
-    // function radio.openWritingPipe(long int address)
     uint8_t addr[5] = {0, 1, 2, 3, 4};
-    nrf_write_reg(NRF_REG_RX_ADDR_P0, &addr[0], 5);
-    nrf_write_reg(NRF_REG_TX_ADDR, &addr[0], 5);
-    nrf_write_reg_single(NRF_REG_RX_PW_P0, 32);
-    // **
+    // just a 1 byte packet for simple test
+    nrf_open_reading_pipe(NRF_PIPE_1, &addr[0], 5, 1);
 
-    uint8_t payload[32] =
-    {
-        'M','e','s','s','a','g','e',' ',
-        '0', 0,  0,  0,  0,  0,  0,  0,
-         0,  0,  0,  0,  0,  0,  0,  0,
-         0,  0,  0,  0,  0,  0,  0,  0
-    };
+    nrf_start_listening();
+
+    uint8_t led_state[4] = {0};
 
     while (1)
     {
-        nrf_write_tx_payload(&payload[0], 32);
-        gpio_set(NRF_CE_PORT, NRF_CE_PIN);
-        reg_val = 0;
-        while (!(reg_val & (NRF_STATUS_TX_DS | NRF_STATUS_MAX_RT))) reg_val = nrf_read_status();
-        gpio_clr(NRF_CE_PORT, NRF_CE_PIN);
+        while (!nrf_is_data_ready());
 
-        // nrf_show_upto(0x07);
-        if (reg_val & NRF_STATUS_TX_DS)
-        {
-            // ack was received
-            gpio_set(PIOB, PIO_PB0);
-            gpio_set(PIOB, PIO_PB1);
-            for (uint32_t i = 0; i < 1000000; i++) asm volatile ("Nop");
-            gpio_clr(PIOB, PIO_PB0);
-            gpio_clr(PIOB, PIO_PB1);
-            for (uint32_t i = 0; i < 1000000; i++) asm volatile ("Nop");
-        }
-        if (reg_val & NRF_STATUS_MAX_RT)
-        {
-            // blink something always
-            gpio_set(PIOB, PIO_PB2);
-            gpio_set(PIOB, PIO_PB3);
-            for (uint32_t i = 0; i < 1000000; i++) asm volatile ("Nop");
-            gpio_clr(PIOB, PIO_PB2);
-            gpio_clr(PIOB, PIO_PB3);
-            for (uint32_t i = 0; i < 1000000; i++) asm volatile ("Nop");
+        uint8_t pos = 0;
+        uint8_t pipe_num = nrf_receive_packet(&pos);
+        nrf_rx_pipe_size(pipe_num);
 
-            reg_val = nrf_read_status();
-            // write 1 to clear bit, enable further communication
-            reg_val |= NRF_STATUS_MAX_RT;
-            nrf_write_reg_single(NRF_REG_STATUS, reg_val);
-            nrf_flush_tx();
-        }
+        if (nrf_rx_buf[pos] == '1') led_state[0] = 1 - led_state[0];
+        if (nrf_rx_buf[pos] == '2') led_state[1] = 1 - led_state[1];
+        if (nrf_rx_buf[pos] == '3') led_state[2] = 1 - led_state[2];
+        if (nrf_rx_buf[pos] == '4') led_state[3] = 1 - led_state[3];
+
+        gpio_write(PIOB, PIO_PB0, led_state[0]);
+        gpio_write(PIOB, PIO_PB1, led_state[1]);
+        gpio_write(PIOB, PIO_PB2, led_state[2]);
+        gpio_write(PIOB, PIO_PB3, led_state[3]);
     }
+
     return 0;
 }

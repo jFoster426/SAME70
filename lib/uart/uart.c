@@ -82,6 +82,9 @@ void uart_conf(Uart* uart_n, uint32_t baud, uint32_t parity)
 
 void uart_enable_interrupt(Uart* uart_n, void* interruptHandler)
 {
+    // get rid of compiler warnings (temporary)
+    uart_n += 1;
+    interruptHandler += 1;
 }
 
 void uart_transmit_byte(Uart* uart_n, uint8_t txChar)
@@ -124,6 +127,8 @@ void uart_transmit_hex(Uart* uart_n, uint32_t h, uint8_t size)
     itoa(h, base, 16);
 
     uart_transmit_string(uart_n, base);
+    // suppress compiler warnings
+    size++;
 }
 
 uint8_t uart_receive_byte(Uart* uart_n)

@@ -1,9 +1,14 @@
-#include "same70q21.h"
-#include "../gpio/gpio.h"
-#include "../spi/spi.h"
-
 #ifndef NRF_H
 #define NRF_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "same70q21.h"
+#include "../gpio/gpio.h"
+#ifdef __DEBUG__
+#include "../uart/uart.h"
+#endif
+#include "../spi/spi.h"
 
 #define NRF_CE_PORT   PIOD
 #define NRF_CSN_PORT  PIOD
@@ -11,6 +16,20 @@
 #define NRF_CE_PIN    PIO_PD25
 #define NRF_CSN_PIN   PIO_PD26
 #define NRF_IRQ_PIN
+
+#define NRF_DATARATE_250KBPS  0
+#define NRF_DATARATE_1MBPS    1
+#define NRF_DATARATE_2MBPS    2
+
+#define NRF_MODE_TX  0
+#define NRF_MODE_RX  1
+
+#define NRF_PIPE_0   0
+#define NRF_PIPE_1   1
+#define NRF_PIPE_2   2
+#define NRF_PIPE_3   3
+#define NRF_PIPE_4   4
+#define NRF_PIPE_5   5
 
 #define NRF_R_REGISTER           (0b00000000)
 #define NRF_R_REGISTER_MASK      (0b00011111)
@@ -158,8 +177,13 @@
 #define NRF_EN_ACK_PAY      (1 << 1)
 #define NED_EN_DYN_ACK      (1 << 0)
 
+extern uint8_t nrf_tx_buf_size;
 uint8_t nrf_rx_buf[256];
 static volatile uint8_t nrf_rx_buf_idx = 0;
+
+#ifdef __DEBUG__
+void nrf_show_upto(uint8_t upto);
+#endif
 
 uint8_t nrf_read_reg_single(uint8_t reg);
 uint8_t *nrf_read_reg(uint8_t reg, uint8_t size);
@@ -171,6 +195,8 @@ uint8_t nrf_read_status();
 
 void nrf_write_cmd(uint8_t cmd);
 
+uint8_t nrf_rx_pipe_size(uint8_t pipe_num);
+
 uint8_t nrf_read_rx_payload(uint8_t size);
 
 void nrf_write_tx_payload(uint8_t payload[], uint8_t size);
@@ -178,5 +204,39 @@ void nrf_write_tx_payload(uint8_t payload[], uint8_t size);
 void nrf_flush_tx();
 
 void nrf_flush_rx();
+
+// these are more user friendly functions
+
+void nrf_enable_autoack(uint8_t pipe);
+
+void nrf_set_mode(uint8_t mode);
+
+void nrf_stop_listening();
+
+void nrf_start_listening();
+
+uint8_t nrf_conf();
+
+void nrf_set_channel(uint8_t ch);
+
+void nrf_set_data_rate(uint8_t rate);
+
+void nrf_set_power_output(uint8_t power);
+
+void nrf_set_retries(uint8_t delay, uint8_t count);
+
+void nrf_open_writing_pipe(uint8_t *addr, uint8_t size, uint8_t buf_size);
+
+void nrf_open_reading_pipe(uint8_t pipeNum, uint8_t *addr, uint8_t size, uint8_t buf_size);
+
+uint8_t nrf_send_packet(uint8_t *packet, uint8_t size);
+
+uint8_t nrf_which_pipe();
+
+uint8_t nrf_receive_packet(uint8_t *pos);
+
+uint8_t nrf_is_data_ready();
+
+
 
 #endif
