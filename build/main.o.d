@@ -73,8 +73,9 @@ build/main.o: main.c \
  include/instance/gpbr.h include/instance/rswdt.h \
  include/instance/uart2.h include/instance/uart3.h \
  include/instance/uart4.h include/pio/same70q21.h lib/gpio/gpio.h \
- lib/uart/uart.h lib/spi/spi.h lib/spi/../gpio/gpio.h lib/nrf/nrf.h \
- lib/nrf/../gpio/gpio.h lib/nrf/../uart/uart.h lib/nrf/../spi/spi.h
+ lib/pwm/pwm.h lib/uart/uart.h lib/spi/spi.h lib/spi/../gpio/gpio.h \
+ lib/nrf/nrf.h lib/nrf/../gpio/gpio.h lib/nrf/../uart/uart.h \
+ lib/nrf/../spi/spi.h
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\stdio.h:
 
@@ -335,6 +336,8 @@ include/instance/uart4.h:
 include/pio/same70q21.h:
 
 lib/gpio/gpio.h:
+
+lib/pwm/pwm.h:
 
 lib/uart/uart.h:
 

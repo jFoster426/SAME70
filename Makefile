@@ -33,8 +33,8 @@ all: clean build/program.elf build/program.hex build/program.bin size build/objd
 build/objdump.asm: build/program.elf
 	@arm-none-eabi-objdump -D build/program.elf > build/objdump.asm
 
-build/program.elf: startup_same70.o build/gpio.o build/uart.o build/spi.o build/nrf.o main.o
-	@$(CC) $(LDFLAGS) build/startup_same70.o build/gpio.o build/uart.o build/spi.o build/nrf.o build/main.o -o build/program.elf
+build/program.elf: startup_same70.o build/gpio.o build/pwm.o build/uart.o build/spi.o build/nrf.o main.o
+	@$(CC) $(LDFLAGS) build/startup_same70.o build/gpio.o build/pwm.o build/uart.o build/spi.o build/nrf.o build/main.o -o build/program.elf
 
 build/program.hex: build/program.elf
 	@$(OBJCOPY) -O ihex build/program.elf build/program.hex
@@ -50,6 +50,9 @@ main.o: main.c
 
 build/gpio.o: lib/gpio/gpio.c
 	@$(CC) $(CFLAGS) -c lib/gpio/gpio.c -o build/gpio.o
+
+build/pwm.o: lib/pwm/pwm.c
+	@$(CC) $(CFLAGS) -c lib/pwm/pwm.c -o build/pwm.o
 
 build/uart.o: lib/uart/uart.c
 	@$(CC) $(CFLAGS) -c lib/uart/uart.c -o build/uart.o
