@@ -44,7 +44,7 @@ build/pwm.o: lib/pwm/pwm.c lib/pwm/pwm.h include/same70q21.h \
  include/instance/rtt.h include/instance/wdt.h include/instance/rtc.h \
  include/instance/gpbr.h include/instance/rswdt.h \
  include/instance/uart2.h include/instance/uart3.h \
- include/instance/uart4.h include/pio/same70q21.h
+ include/instance/uart4.h include/pio/same70q21.h lib/pwm/../uart/uart.h
 
 lib/pwm/pwm.h:
 
@@ -251,3 +251,5 @@ include/instance/uart3.h:
 include/instance/uart4.h:
 
 include/pio/same70q21.h:
+
+lib/pwm/../uart/uart.h:

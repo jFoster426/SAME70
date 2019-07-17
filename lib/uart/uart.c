@@ -9,9 +9,6 @@ void uart_conf(Uart* uart_n, uint32_t baud, uint32_t parity)
     {
         // enable the uart clock using the power management controller
         PMC->PMC_PCER0 |= PMC_PCER0_PID7;
-        // disable the PIO controller (enables peripheral state control)
-        gpio_conf(PIOA, PIO_PA9, PIO_DISABLE);
-        gpio_conf(PIOA, PIO_PA10, PIO_DISABLE);
         // configure the gpio lines to the right state
         // uart0 pins (144 pin package):
         // RX - PA9 (PIO Alternate Function A)
@@ -22,8 +19,6 @@ void uart_conf(Uart* uart_n, uint32_t baud, uint32_t parity)
     else if (uart_n == UART1)
     {
         PMC->PMC_PCER0 |= PMC_PCER0_PID8;
-        gpio_conf(PIOA, PIO_PA5, PIO_DISABLE);
-        gpio_conf(PIOA, PIO_PA6, PIO_DISABLE);
         // uart1 pins (144 pin package):
         // RX - PA5 (Alternate Function C)
         // TX - PA4, PA6 (Alternate Function C), PD26 (Alternate Function D)
@@ -33,8 +28,6 @@ void uart_conf(Uart* uart_n, uint32_t baud, uint32_t parity)
     else if (uart_n == UART2)
     {
         PMC->PMC_PCER1 |= PMC_PCER1_PID44;
-        gpio_conf(PIOD, PIO_PD25, PIO_DISABLE);
-        gpio_conf(PIOD, PIO_PD26, PIO_DISABLE);
         // uart2 pins (144 pin package):
         // RX - PD25 (Alternate Function C)
         // TX - PD26 (Alternate Function C)
@@ -44,8 +37,6 @@ void uart_conf(Uart* uart_n, uint32_t baud, uint32_t parity)
     else if (uart_n == UART3)
     {
         PMC->PMC_PCER1 |= PMC_PCER1_PID45;
-        gpio_conf(PIOD, PIO_PD28, PIO_DISABLE);
-        gpio_conf(PIOD, PIO_PD30, PIO_DISABLE);
         // uart2 pins (144 pin package):
         // RX - PD28 (Alternate Function A)
         // TX - PD30 (Alternate Function A), PD31 (Alternate Function B)
@@ -55,8 +46,6 @@ void uart_conf(Uart* uart_n, uint32_t baud, uint32_t parity)
     else if (uart_n == UART4)
     {
         PMC->PMC_PCER1 |= PMC_PCER1_PID46;
-        gpio_conf(PIOD, PIO_PD18, PIO_DISABLE);
-        gpio_conf(PIOD, PIO_PD19, PIO_DISABLE);
         // uart2 pins (144 pin package):
         // RX - PD18 (Alternate Function C)
         // TX - PD19 (Alternate Function C)
