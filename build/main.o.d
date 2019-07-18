@@ -76,7 +76,7 @@ build/main.o: main.c include/same70q21.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\alloca.h \
  lib/nrf/../gpio/gpio.h lib/nrf/../uart/uart.h lib/nrf/../spi/spi.h \
  lib/movement/movement.h lib/movement/../gpio/gpio.h \
- lib/movement/../pwm/pwm.h
+ lib/movement/../pwm/pwm.h lib/movement/../math/math.h
 
 include/same70q21.h:
 
@@ -361,3 +361,5 @@ lib/movement/movement.h:
 lib/movement/../gpio/gpio.h:
 
 lib/movement/../pwm/pwm.h:
+
+lib/movement/../math/math.h:

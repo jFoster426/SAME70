@@ -35,7 +35,20 @@ int main(void)
 {
     // patch wire on demo board if you want this to work
     gpio_conf(PIOB, PIO_PB0, PIO_OUTPUT);
-    motors_conf(4, motor_FL, motor_FR, motor_BL, motor_BR);
+
+    // declare the motors we want
+    motor_t motor_FL = {MOTOR_FRONT_LEFT, PIOC, PIO_PC22, PIOC, PIO_PC13, PIO_ALTA, 0, 0, 0};
+    motor_t motor_FR = {MOTOR_FRONT_RIGHT, PIOC, PIO_PC2,  PIOA, PIO_PA0,  PIO_ALTB, 1, 0, 0};
+    motor_t motor_BL = {MOTOR_BACK_LEFT, PIOC, PIO_PC16, PIOA, PIO_PA15, PIO_ALTB, 2, 0, 0};
+    motor_t motor_BR = {MOTOR_BACK_RIGHT, PIOC, PIO_PC28, PIOA, PIO_PA12, PIO_ALTB, 3, 0, 0};
+
+    // a pointer array to point to all the motors on our robot
+    motor_t *motors[] = {&motor_FL, &motor_BL, &motor_FR, &motor_BR};
+
+    // initialize all the motors
+    motors_conf(motors);
+    // go forward, 100% straight line
+    motors_write_direction(motors, 100, 0, 0);
 
     timer_conf();
 
