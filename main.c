@@ -6,14 +6,29 @@
 #include "nrf/nrf.h"
 #include "movement/movement.h"
 
-volatile int8_t state = 1;
+volatile int8_t state = 0;
 volatile uint8_t ledstate = 0;
+
+// declare the motors we want
+motor_t motor_FL = {MOTOR_FRONT_LEFT, PIOC, PIO_PC2, PIOA, PIO_PA0, PIO_ALTA, 0, 0, 0};   // M1
+motor_t motor_FR = {MOTOR_FRONT_RIGHT, PIOC, PIO_PC8, PIOA, PIO_PA12, PIO_ALTB, 1, 0, 0}; // M2
+motor_t motor_BL = {MOTOR_BACK_LEFT, PIOC, PIO_PC16, PIOA, PIO_PA25, PIO_ALTB, 2, 0, 0};  // M3
+motor_t motor_BR = {MOTOR_BACK_RIGHT, PIOC, PIO_PC22, PIOC, PIO_PC13, PIO_ALTB, 3, 0, 0}; // M4
+
+// a pointer array to point to all the motors on our robot
+motor_t *motors[] = {&motor_FL, &motor_BL, &motor_FR, &motor_BR};
 
 void irq_handler_tc0(void)
 {
     if (TC0->TC_CHANNEL[0].TC_SR & TC_SR_CPCS)
     {
         gpio_write(PIOB, PIO_PB0, ledstate = ~ledstate);
+        state++;
+        if (state == 4) state = 0;
+        else if (state == 0) motors_write_direction(motors, 20, 0, 0);
+        else if (state == 1) motors_write_direction(motors, 20, 90, 0);
+        else if (state == 2) motors_write_direction(motors, 20, 180, 0);
+        else                 motors_write_direction(motors, 20, 270, 0);
     }
 }
 
@@ -36,23 +51,12 @@ int main(void)
     // patch wire on demo board if you want this to work
     gpio_conf(PIOB, PIO_PB0, PIO_OUTPUT);
 
-    // declare the motors we want
-    motor_t motor_FL = {MOTOR_FRONT_LEFT, PIOC, PIO_PC22, PIOC, PIO_PC13, PIO_ALTA, 0, 0, 0};
-    motor_t motor_FR = {MOTOR_FRONT_RIGHT, PIOC, PIO_PC2,  PIOA, PIO_PA0,  PIO_ALTB, 1, 0, 0};
-    motor_t motor_BL = {MOTOR_BACK_LEFT, PIOC, PIO_PC16, PIOA, PIO_PA15, PIO_ALTB, 2, 0, 0};
-    motor_t motor_BR = {MOTOR_BACK_RIGHT, PIOC, PIO_PC28, PIOA, PIO_PA12, PIO_ALTB, 3, 0, 0};
-
-    // a pointer array to point to all the motors on our robot
-    motor_t *motors[] = {&motor_FL, &motor_BL, &motor_FR, &motor_BR};
-
     // initialize all the motors
     motors_conf(motors);
-    // go forward, 100% straight line
-    motors_write_direction(motors, 100, 0, 0);
 
     timer_conf();
 
-    while (1);
+    while (1); // do nothing since the timer controller handles the program
 
     return 0;
 }

@@ -1,7 +1,7 @@
 #ifndef MATH_H
 #define MATH_H
 
-float fast_sin(int in) // fast sin, it's just a LUT
+float fast_sin(int32_t in) // fast sin, it's just a LUT
 {
     float out[91] = { 0.000000, 0.017452, 0.034899, 0.052336, 0.069756, 0.087156, 0.104528,
                       0.121869, 0.139173, 0.156434, 0.173648, 0.190809, 0.207912, 0.224951,
@@ -44,12 +44,12 @@ float fast_sin(int in) // fast sin, it's just a LUT
 
 }
 
-int sign (int x)
+int8_t sign(int32_t x)
 {
     return (x >= 0) ? 1 : -1;
 }
 
-int abs (int x)
+uint32_t abs(int32_t x)
 {
     return (x > 0) ? x : -x;
 }
