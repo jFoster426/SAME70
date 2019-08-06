@@ -77,6 +77,10 @@ void pwm_channel_disable(Pwm *pwm, uint8_t ch)
 	pwm->PWM_DIS = (1 << ch);
 }
 
+// TODO: improve duty cycle accuracy! how accurate can we go? 1% isn't enough for low robot speeds
+// Maybe with encoder control and constant updating between values we can "average" out to a value
+// between steps, but this is CPU intensive
+
 void pwm_channel_set_duty(Pwm *pwm, uint8_t ch, uint8_t duty)
 {
 	float duty_percent = duty / 100.0;

@@ -44,12 +44,12 @@ float fast_sin(int32_t in) // fast sin, it's just a LUT
 
 }
 
-int8_t sign(int32_t x)
+int8_t _sign(int32_t x)
 {
     return (x >= 0) ? 1 : -1;
 }
 
-uint32_t abs(int32_t x)
+uint32_t _abs(int32_t x)
 {
     return (x > 0) ? x : -x;
 }

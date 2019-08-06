@@ -22,13 +22,9 @@ void irq_handler_tc0(void)
 {
     if (TC0->TC_CHANNEL[0].TC_SR & TC_SR_CPCS)
     {
+        motors_write_direction(motors, 0, 0, 0); // stop the motors
         gpio_write(PIOB, PIO_PB0, ledstate = ~ledstate);
-        state++;
-        if (state == 4) state = 0;
-        else if (state == 0) motors_write_direction(motors, 20, 0, 0);
-        else if (state == 1) motors_write_direction(motors, 20, 90, 0);
-        else if (state == 2) motors_write_direction(motors, 20, 180, 0);
-        else                 motors_write_direction(motors, 20, 270, 0);
+        gpio_clr(PIOB, PIO_PB1);
     }
 }
 
@@ -37,7 +33,7 @@ static void timer_conf(void)
   PMC->PMC_PCER0 = PMC_PCER0_PID23;
 
   TC0->TC_CHANNEL[0].TC_CMR = TC_CMR_TCCLKS_TIMER_CLOCK5 | TC_CMR_CPCTRG;
-  TC0->TC_CHANNEL[0].TC_RC = 40000;
+  TC0->TC_CHANNEL[0].TC_RC = 20000;
   TC0->TC_CHANNEL[0].TC_CCR = TC_CCR_CLKEN | TC_CCR_SWTRG;
   TC0->TC_CHANNEL[0].TC_IER = TC_IER_CPCS;
   TC0->TC_CHANNEL[0].TC_CCR = TC_CCR_CLKEN | TC_CCR_SWTRG;
@@ -50,13 +46,73 @@ int main(void)
 {
     // patch wire on demo board if you want this to work
     gpio_conf(PIOB, PIO_PB0, PIO_OUTPUT);
+    gpio_conf(PIOB, PIO_PB1, PIO_OUTPUT);
 
     // initialize all the motors
     motors_conf(motors);
 
     timer_conf();
 
-    while (1); // do nothing since the timer controller handles the program
+    spi_conf(SPI0, 1000000UL, SPI_MODE_0);
+
+    nrf_conf();
+    nrf_set_mode(NRF_MODE_RX);
+    nrf_set_channel(0x1F);
+    nrf_set_data_rate(NRF_DATARATE_1MBPS);
+    nrf_set_power_output(NRF_RF_PWR_0);
+
+    uint8_t addr[5] = {0, 1, 2, 3, 4};
+    // last parameter is how many bytes the packet is
+    nrf_open_reading_pipe(NRF_PIPE_1, &addr[0], 5, 1);
+
+
+
+    nrf_start_listening();
+
+    while (1)
+    {
+
+        while (!nrf_is_data_ready());
+        gpio_set(PIOB, PIO_PB1);
+
+        uint8_t pos = 0;
+        uint8_t pipe_num = nrf_receive_packet(&pos);
+        uint8_t size_of_packet = nrf_rx_pipe_size(pipe_num);
+
+        // timer interrupt turns off the motors for us
+        if (nrf_rx_buf[pos] == 'W')
+        {
+            motors_write_direction(motors, 20, 0, 0);
+        }
+        else
+        if (nrf_rx_buf[pos] == 'A')
+        {
+            motors_write_direction(motors, 20, -90, 0);
+        }
+        else
+        if (nrf_rx_buf[pos] == 'S')
+        {
+            motors_write_direction(motors, 20, 180, 0);
+        }
+        else
+        if (nrf_rx_buf[pos] == 'D')
+        {
+            motors_write_direction(motors, 20, 90, 0);
+        }
+        else
+        if (nrf_rx_buf[pos] == 'Q')
+        {
+            motors_write_direction(motors, 0, 0, -10);
+        }
+        else
+        if (nrf_rx_buf[pos] == 'E')
+        {
+            motors_write_direction(motors, 0, 0, 10);
+        }
+
+        TC0->TC_CHANNEL[0].TC_CCR |= TC_CCR_SWTRG; // resets counter for full pulse
+
+    }
 
     return 0;
 }

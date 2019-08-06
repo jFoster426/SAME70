@@ -44,7 +44,7 @@ void motors_conf(motor_t* motors[])
     pwm_channel_set_duty(PWM0, 0, 0);
     pwm_channel_set_duty(PWM0, 1, 0);
     pwm_channel_set_duty(PWM0, 2, 0);
-    pwm_channel_set_duty(PWM0, 3, 0);
+    pwm_channel_set_duty(PWM0, 3, 0); // why can we not put this in the for loop?
 
 // **** won't need this when new drivers come (mode=1)
 #define MODE_FRONT_RIGHT    PIO_PC3
@@ -89,7 +89,7 @@ void motors_write_direction(motor_t* motors[], uint8_t pwr, int16_t theta, int16
         else
         if (motors[i]->pos == MOTOR_BACK_RIGHT) duty = pwr * fast_sin(theta - 130) + phi;
         else break;  // not a valid motor location
-        motor_write_individual(*motors[i], abs(duty), sign(duty));
+        motor_write_individual(*motors[i], _abs(duty), _sign(duty));
     }
 }
 
